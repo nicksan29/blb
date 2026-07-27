@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Cria a instância do Axios apontando para o seu Laravel local
 export const api = axios.create({
-  baseURL: 'http://localhost:8000/api', // Endereço padrão do Laravel
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api', // Usa a variável de ambiente se existir
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
