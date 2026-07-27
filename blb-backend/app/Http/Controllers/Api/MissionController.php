@@ -84,19 +84,23 @@ class MissionController extends Controller
 
         $request->validate([
             'proof_text' => 'required|string',
-            'proof_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:20480',
+            'proof_media' => 'nullable|array',
+            'proof_media.*' => 'file|mimes:jpeg,png,jpg,webp,mp4,mov,avi,wmv|max:51200',
         ]);
 
-        $path = null;
-        if ($request->hasFile('proof_image')) {
-            $path = $request->file('proof_image')->store('missions/proofs', 'public');
+        $mediaPaths = [];
+        if ($request->hasFile('proof_media')) {
+            foreach ($request->file('proof_media') as $file) {
+                $mediaPaths[] = $file->store('missions/proofs', 'public');
+            }
         }
 
         \App\Models\MissionSubmission::create([
             'mission_id' => $id,
             'user_id' => $user->id,
             'proof_text' => $request->proof_text,
-            'proof_image_path' => $path,
+            'proof_image_path' => count($mediaPaths) > 0 ? $mediaPaths[0] : null, // Fallback para manter retrocompatibilidade
+            'media_paths' => $mediaPaths,
             'status' => 'pending' // Fica amarelo para o DBV
         ]);
 
@@ -197,10 +201,20 @@ class MissionController extends Controller
             'reward_xp' => 'required|integer|min:0',
             'reward_btlcs' => 'required|integer|min:0',
             'expires_at' => 'nullable|date',
+            'mission_media' => 'nullable|array',
+            'mission_media.*' => 'file|mimes:jpeg,png,jpg,webp,mp4,mov,avi,wmv|max:51200',
         ]);
+
+        $mediaPaths = [];
+        if ($request->hasFile('mission_media')) {
+            foreach ($request->file('mission_media') as $file) {
+                $mediaPaths[] = $file->store('missions/admin', 'public');
+            }
+        }
 
         // Força a missão a nascer como ativa
         $validated['is_active'] = true;
+        $validated['media_paths'] = $mediaPaths;
 
         $mission = Mission::create($validated);
 

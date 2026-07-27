@@ -14,8 +14,13 @@ class MissionSubmission extends Model
         'user_id',
         'proof_text',
         'proof_image_path',
+        'media_paths',
         'status',
         'rejection_reason',
+    ];
+
+    protected $casts = [
+        'media_paths' => 'array',
     ];
 
     // Relações para podermos buscar os dados do usuário e da missão

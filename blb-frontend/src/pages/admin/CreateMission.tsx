@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Target, PlusCircle, Trash2, Edit2, CheckCircle, Clock } from 'lucide-react';
+import { Target, PlusCircle, Trash2, Edit2, CheckCircle, Clock, Upload } from 'lucide-react';
 import Layout from '../../components/layout';
 import { api } from '../../services/api';
 
@@ -11,6 +11,7 @@ interface Mission {
     reward_xp: number;
     reward_btlcs: number;
     expires_at: string | null;
+    media_paths?: string[] | null;
 }
 
 export default function CreateMission() {
@@ -24,6 +25,7 @@ export default function CreateMission() {
     const [rewardXp, setRewardXp] = useState('');
     const [rewardBtlcs, setRewardBtlcs] = useState('');
     const [expiresAt, setExpiresAt] = useState('');
+    const [missionMedia, setMissionMedia] = useState<File[]>([]);
 
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
@@ -41,20 +43,26 @@ export default function CreateMission() {
         e.preventDefault();
         setLoading(true);
         try {
-            const payload = {
-                title,
-                description,
-                category,
-                reward_xp: Number(rewardXp),
-                reward_btlcs: Number(rewardBtlcs),
-                expires_at: expiresAt || null, // Se vazio, envia nulo (não expira)
-            };
+            // Usar FormData para suportar envio de arquivos
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('description', description);
+            formData.append('category', category);
+            formData.append('reward_xp', rewardXp.toString());
+            formData.append('reward_btlcs', rewardBtlcs.toString());
+            if (expiresAt) formData.append('expires_at', expiresAt);
+
+            missionMedia.forEach(file => {
+                formData.append('mission_media[]', file);
+            });
+
+            const config = { headers: { 'Content-Type': 'multipart/form-data' } };
 
             if (editingId) {
-                await api.put(`/admin/missions/${editingId}`, payload);
+                await api.post(`/admin/missions/${editingId}?_method=PUT`, formData, config);
                 setMessage('Missão atualizada com sucesso!');
             } else {
-                await api.post('/admin/missions', payload);
+                await api.post('/admin/missions', formData, config);
                 setMessage('Missão criada e publicada com sucesso!');
             }
 
@@ -89,6 +97,7 @@ export default function CreateMission() {
         setRewardBtlcs(m.reward_btlcs.toString());
         // Formata a data para o input datetime-local
         setExpiresAt(m.expires_at ? new Date(m.expires_at).toISOString().slice(0, 16) : '');
+        setMissionMedia([]); // Limpa mídias novas ao editar
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
@@ -100,6 +109,7 @@ export default function CreateMission() {
         setRewardXp('');
         setRewardBtlcs('');
         setExpiresAt('');
+        setMissionMedia([]);
     };
 
     return (
@@ -151,6 +161,22 @@ export default function CreateMission() {
                         <label className="block text-xs font-bold text-zinc-500 mb-2 uppercase">Expira em (Opcional)</label>
                         <input type="datetime-local" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} className="w-full bg-blb-black border border-zinc-700 rounded-lg p-3 text-white focus:border-blb-purple [color-scheme:dark]" />
                     </div>
+                </div>
+
+                <div className="border-t border-zinc-800 pt-4 mt-4">
+                    <label className="block text-xs font-bold text-zinc-500 mb-2 uppercase flex items-center gap-2">
+                        <Upload size={14} /> Anexar Mídias de Exemplo (Opcional)
+                    </label>
+                    <input 
+                        type="file" 
+                        multiple 
+                        accept="image/*,video/*" 
+                        onChange={(e) => setMissionMedia(e.target.files ? Array.from(e.target.files) : [])} 
+                        className="block w-full text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 cursor-pointer"
+                    />
+                    {missionMedia.length > 0 && (
+                        <p className="text-xs text-blb-purple mt-2 font-bold">{missionMedia.length} arquivo(s) selecionado(s)</p>
+                    )}
                 </div>
 
                 <div className="flex gap-2 mt-4">

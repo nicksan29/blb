@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle, Image as ImageIcon } from 'lucide-react';
+import { CheckCircle, Image as ImageIcon, Film } from 'lucide-react';
 import Layout from '../../components/layout';
 import { api } from '../../services/api';
 import MissionReviewModal from '../../components/MissionReviewModal';
@@ -49,14 +49,34 @@ export default function PendingMissions() {
             <motion.div key={sub.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col md:flex-row gap-4">
               
               <div 
-                className="w-full md:w-32 h-32 bg-black rounded-lg border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0 cursor-pointer"
+                className="w-full md:w-32 h-32 bg-black rounded-lg border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0 cursor-pointer relative"
                 onClick={() => setSelectedSubmission(sub)}
               >
-                {sub.proof_image_path ? (
-                  <img src={`${API_URL}/storage/${sub.proof_image_path}`} alt="Evidência" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="text-zinc-600 flex flex-col items-center"><ImageIcon size={24} /><span className="text-xs mt-1">Sem Foto</span></div>
-                )}
+                {(() => {
+                  const mediaList = sub.media_paths || (sub.proof_image_path ? [sub.proof_image_path] : []);
+                  if (mediaList.length > 0) {
+                    const firstMedia = mediaList[0];
+                    const isVideo = firstMedia.match(/\.(mp4|mov|avi|wmv)$/i);
+                    return (
+                      <>
+                        {isVideo ? (
+                          <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-zinc-500 relative">
+                            <Film size={32} />
+                          </div>
+                        ) : (
+                          <img src={`${API_URL}/storage/${firstMedia}`} alt="Evidência" className="w-full h-full object-cover" />
+                        )}
+                        {mediaList.length > 1 && (
+                          <div className="absolute bottom-1 right-1 bg-black/70 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                            +{mediaList.length - 1}
+                          </div>
+                        )}
+                      </>
+                    );
+                  } else {
+                    return <div className="text-zinc-600 flex flex-col items-center"><ImageIcon size={24} /><span className="text-xs mt-1">Sem Foto</span></div>;
+                  }
+                })()}
               </div>
 
               <div className="flex-1 flex flex-col justify-between">

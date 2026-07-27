@@ -3,14 +3,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Target, Upload, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 import Layout from '../components/layout';
 import { api } from '../services/api';
+import ImageViewerModal from '../components/ImageViewerModal';
 
 export default function Missions() {
   const [missions, setMissions] = useState<any[]>([]);
   const [expandedId, setExpandedId] = useState<number | null>(null);
   
   const [proofText, setProofText] = useState('');
-  const [proofImage, setProofImage] = useState<File | null>(null);
+  const [proofMedia, setProofMedia] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showImageViewer, setShowImageViewer] = useState<{url: string, type: 'image' | 'video'} | null>(null);
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   const fetchMissions = () => {
     api.get('/missions').then(response => setMissions(response.data)).catch(console.error);
@@ -26,14 +30,16 @@ export default function Missions() {
 
     const formData = new FormData();
     formData.append('proof_text', proofText);
-    if (proofImage) formData.append('proof_image', proofImage);
+    proofMedia.forEach((file) => {
+      formData.append('proof_media[]', file);
+    });
 
     try {
       await api.post(`/missions/${missionId}/submit`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setProofText('');
-      setProofImage(null);
+      setProofMedia([]);
       fetchMissions(); // Recarrega para pintar de amarelo
     } catch (err: any) {
       alert(err.response?.data?.message || 'Erro ao enviar.');
@@ -122,6 +128,34 @@ export default function Missions() {
                       {mission.description}
                     </p>
 
+                    {/* Galeria de Mídias da Missão (Exemplos do Admin) */}
+                    {mission.media_paths && mission.media_paths.length > 0 && (
+                      <div className="mb-4">
+                        <p className="text-zinc-500 text-xs font-bold uppercase mb-2">Exemplos da Missão:</p>
+                        <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-2">
+                          {mission.media_paths.map((path: string, index: number) => {
+                            const isVideo = path.match(/\.(mp4|mov|avi|wmv)$/i);
+                            const mediaUrl = `${API_URL}/storage/${path}`;
+                            return (
+                              <div 
+                                key={index} 
+                                className="w-24 h-24 shrink-0 rounded-lg overflow-hidden border border-zinc-700 relative cursor-pointer group bg-black"
+                                onClick={() => setShowImageViewer({ url: mediaUrl, type: isVideo ? 'video' : 'image' })}
+                              >
+                                {isVideo ? (
+                                  <div className="w-full h-full flex items-center justify-center text-zinc-500 group-hover:bg-zinc-800 transition-colors">
+                                    <span className="text-[10px] font-bold">Vídeo</span>
+                                  </div>
+                                ) : (
+                                  <img src={mediaUrl} alt={`Exemplo ${index}`} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Exibe o motivo da recusa */}
                     {status === 'rejected' && (
                       <div className="mb-4 p-3 bg-red-900/30 border border-red-500/50 rounded-lg text-sm text-red-200">
@@ -143,9 +177,18 @@ export default function Missions() {
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-zinc-500 mb-2 uppercase flex items-center gap-2">
-                            <Upload size={14} /> Enviar Foto (Opcional)
+                            <Upload size={14} /> Enviar Mídias (Fotos e Vídeos)
                           </label>
-                          <input type="file" accept="image/*" onChange={(e) => setProofImage(e.target.files ? e.target.files[0] : null)} className="block w-full text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-blb-gold file:text-blb-black" />
+                          <input 
+                            type="file" 
+                            multiple
+                            accept="image/*,video/*" 
+                            onChange={(e) => setProofMedia(e.target.files ? Array.from(e.target.files) : [])} 
+                            className="block w-full text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-blb-gold file:text-blb-black cursor-pointer" 
+                          />
+                          {proofMedia.length > 0 && (
+                            <p className="text-xs text-blb-gold mt-2 font-bold">{proofMedia.length} arquivo(s) selecionado(s)</p>
+                          )}
                         </div>
                         <button type="submit" disabled={loading} className="w-full bg-blb-gold hover:bg-blb-purple text-blb-black hover:text-white font-bold py-3 rounded-lg flex justify-center items-center gap-2">
                           <CheckCircle size={20} /> ENVIAR EVIDÊNCIA
@@ -159,6 +202,14 @@ export default function Missions() {
           );
         })}
       </div>
+
+      {showImageViewer && (
+        <ImageViewerModal 
+          imageUrl={showImageViewer.url}
+          type={showImageViewer.type}
+          onClose={() => setShowImageViewer(null)} 
+        />
+      )}
     </Layout>
   );
 }

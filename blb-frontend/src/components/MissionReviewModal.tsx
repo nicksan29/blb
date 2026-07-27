@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, CheckCircle, XCircle, Image as ImageIcon } from 'lucide-react';
+import { X, CheckCircle, XCircle, Image as ImageIcon, Film } from 'lucide-react';
 import ImageViewerModal from './ImageViewerModal';
 
 interface MissionSubmission {
@@ -16,6 +16,7 @@ interface MissionSubmission {
   };
   proof_text: string;
   proof_image_path: string | null;
+  media_paths: string[] | null;
   status: string;
   created_at: string;
 }
@@ -31,10 +32,11 @@ export default function MissionReviewModal({ submission, onClose, onApprove, onR
   const [rejectMode, setRejectMode] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showImageViewer, setShowImageViewer] = useState(false);
+  const [showImageViewer, setShowImageViewer] = useState<{url: string, type: 'image' | 'video'} | null>(null);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-  const imageUrl = submission.proof_image_path ? `${API_URL}/storage/${submission.proof_image_path}` : null;
+  
+  const mediaList = submission.media_paths || (submission.proof_image_path ? [submission.proof_image_path] : []);
 
   const handleApprove = async () => {
     setLoading(true);
@@ -89,25 +91,38 @@ export default function MissionReviewModal({ submission, onClose, onApprove, onR
               <span className="text-blb-gold font-bold">+{submission.mission.reward_btlcs} Btlcs</span>
             </div>
 
-            {/* Imagem */}
-            {imageUrl ? (
+            {/* Mídias */}
+            {mediaList.length > 0 ? (
               <div className="mb-6">
-                <p className="text-zinc-400 text-sm mb-2 font-bold uppercase tracking-wider">Evidência (Imagem)</p>
-                <div 
-                  className="bg-black border border-zinc-700 rounded-xl overflow-hidden h-64 relative cursor-pointer group"
-                  onClick={() => setShowImageViewer(true)}
-                >
-                  <img src={imageUrl} alt="Evidência" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/40 transition-colors">
-                    <span className="bg-blb-black/80 text-white text-xs font-bold px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
-                      <ImageIcon size={14} /> Ampliar Imagem
-                    </span>
-                  </div>
+                <p className="text-zinc-400 text-sm mb-2 font-bold uppercase tracking-wider">Evidências ({mediaList.length})</p>
+                <div className={`grid gap-3 ${mediaList.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                  {mediaList.map((path, index) => {
+                    const isVideo = path.match(/\.(mp4|mov|avi|wmv)$/i);
+                    const mediaUrl = `${API_URL}/storage/${path}`;
+                    return (
+                      <div 
+                        key={index}
+                        className={`bg-black border border-zinc-700 rounded-xl overflow-hidden relative cursor-pointer group ${mediaList.length === 1 ? 'h-64' : 'h-32'}`}
+                        onClick={() => setShowImageViewer({ url: mediaUrl, type: isVideo ? 'video' : 'image' })}
+                      >
+                        {isVideo ? (
+                          <video src={mediaUrl} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                        ) : (
+                          <img src={mediaUrl} alt={`Evidência ${index + 1}`} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                        )}
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/40 transition-colors">
+                          <span className="bg-blb-black/80 text-white text-xs font-bold px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
+                            {isVideo ? <Film size={14} /> : <ImageIcon size={14} />} Ampliar
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ) : (
               <div className="mb-6 bg-zinc-800/50 border border-dashed border-zinc-700 rounded-xl p-4 text-center text-zinc-500 text-sm">
-                Nenhuma imagem enviada.
+                Nenhuma mídia enviada.
               </div>
             )}
 
@@ -172,10 +187,11 @@ export default function MissionReviewModal({ submission, onClose, onApprove, onR
         </div>
       </div>
 
-      {showImageViewer && imageUrl && (
+      {showImageViewer && (
         <ImageViewerModal 
-          imageUrl={imageUrl} 
-          onClose={() => setShowImageViewer(false)} 
+          imageUrl={showImageViewer.url}
+          type={showImageViewer.type}
+          onClose={() => setShowImageViewer(null)} 
         />
       )}
     </>
