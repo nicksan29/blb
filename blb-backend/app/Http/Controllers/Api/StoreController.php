@@ -100,7 +100,7 @@ class StoreController extends Controller
             'description' => 'nullable|string',
             'price_btlcs' => 'required|integer|min:0',
             'stock' => 'required|integer|min:0',
-            'image' => 'nullable|image|max:2048' // Max 2MB
+            'image' => 'nullable|image|max:20480' // Max 20MB
         ]);
 
         $imagePath = null;
@@ -128,7 +128,7 @@ class StoreController extends Controller
             'description' => 'nullable|string',
             'price_btlcs' => 'sometimes|integer|min:0',
             'stock' => 'sometimes|integer|min:0',
-            'image' => 'nullable|image|max:2048'
+            'image' => 'nullable|image|max:20480'
         ]);
 
         if ($request->hasFile('image')) {

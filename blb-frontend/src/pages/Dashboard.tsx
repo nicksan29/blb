@@ -18,6 +18,11 @@ export default function Dashboard() {
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
 
   useEffect(() => {
+    // Atualiza os dados do usuário no topo da tela
+    api.get('/me').then(res => {
+      useAuthStore.getState().updateUser(res.data);
+    }).catch(err => console.error(err));
+
     api.get('/ranking').then(response => {
       setIsRankingVisible(response.data.is_visible);
       setLevelRanking(response.data.level_ranking);
