@@ -62,6 +62,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // --- Gestão de Usuários e Sistema ---
         Route::get('/users', [ProfileController::class, 'indexUsers']);
         Route::post('/users/{id}/change-password', [ProfileController::class, 'adminChangeUserPassword']);
+        Route::put('/users/{id}/points', [ProfileController::class, 'adminUpdatePoints']);
         Route::post('/ranking/toggle-status', [DashboardController::class, 'toggleRankingStatus']);
     });
 });

@@ -42,14 +42,25 @@ export default function Missions() {
     }
   };
 
-  // Função para saber a cor do card baseado na submissão
-  const getCardStyle = (submissions: any[]) => {
-    if (!submissions || submissions.length === 0) return 'bg-zinc-900 border-zinc-800'; // Normal
+  // Função para saber a cor do card baseado na categoria e status
+  const getCardStyle = (mission: any) => {
+    const category = mission.category || 'Mental';
+    let baseStyle = 'bg-zinc-900 border-zinc-800';
+    
+    if (category === 'Natureza') baseStyle = 'bg-green-900/20 border-green-900/50';
+    else if (category === 'Espiritual') baseStyle = 'bg-purple-900/20 border-purple-900/50';
+    else if (category === 'Física') baseStyle = 'bg-yellow-900/20 border-yellow-900/50';
+    else if (category === 'Mental') baseStyle = 'bg-zinc-800/50 border-zinc-700/50';
+
+    const submissions = mission.submissions;
+    if (!submissions || submissions.length === 0) return baseStyle;
+    
     const status = submissions[0].status;
-    if (status === 'pending') return 'bg-yellow-900/20 border-yellow-600/50';
-    if (status === 'approved') return 'bg-green-900/20 border-green-600/50';
-    if (status === 'rejected') return 'bg-red-900/20 border-red-600/50';
-    return 'bg-zinc-900 border-zinc-800';
+    if (status === 'pending') return `${baseStyle} ring-1 ring-yellow-500/50 shadow-[0_0_15px_rgba(234,179,8,0.1)]`;
+    if (status === 'approved') return `${baseStyle} ring-1 ring-green-500/50 opacity-60`;
+    if (status === 'rejected') return `${baseStyle} ring-1 ring-red-500/50`;
+    
+    return baseStyle;
   };
 
   return (
@@ -77,7 +88,7 @@ export default function Missions() {
           const status = submission?.status;
 
           return (
-            <motion.div layout key={mission.id} className={`border rounded-xl overflow-hidden transition-colors ${getCardStyle(mission.submissions)}`}>
+            <motion.div layout key={mission.id} className={`border rounded-xl overflow-hidden transition-colors ${getCardStyle(mission)}`}>
               <div 
                 className="p-4 flex justify-between items-center cursor-pointer hover:bg-black/20"
                 onClick={() => setExpandedId(expandedId === mission.id ? null : mission.id)}
@@ -89,9 +100,14 @@ export default function Missions() {
                     {status === 'approved' && <CheckCircle size={16} className="text-green-500" />}
                     {status === 'rejected' && <AlertTriangle size={16} className="text-red-500" />}
                   </h3>
-                  {status === 'pending' && <p className="text-xs text-yellow-500 font-bold uppercase mt-1">Em Análise</p>}
-                  {status === 'approved' && <p className="text-xs text-green-500 font-bold uppercase mt-1">Concluída</p>}
-                  {status === 'rejected' && <p className="text-xs text-red-500 font-bold uppercase mt-1">Recusada - Tente Novamente</p>}
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-[10px] bg-zinc-900 text-zinc-400 px-2 py-0.5 rounded border border-zinc-700 font-bold uppercase">
+                      {mission.category || 'Mental'}
+                    </span>
+                    {status === 'pending' && <p className="text-xs text-yellow-500 font-bold uppercase">Em Análise</p>}
+                    {status === 'approved' && <p className="text-xs text-green-500 font-bold uppercase">Concluída</p>}
+                    {status === 'rejected' && <p className="text-xs text-red-500 font-bold uppercase">Recusada - Tente Novamente</p>}
+                  </div>
                 </div>
                 <div className="flex gap-3 text-sm font-bold">
                   <span className={status === 'approved' ? 'text-zinc-500 line-through' : 'text-blb-purple'}>{mission.reward_xp} XP</span>

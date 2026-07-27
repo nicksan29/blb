@@ -7,6 +7,7 @@ interface Mission {
     id: number;
     title: string;
     description: string;
+    category: string;
     reward_xp: number;
     reward_btlcs: number;
     expires_at: string | null;
@@ -19,6 +20,7 @@ export default function CreateMission() {
     // Estados do formulário
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
+    const [category, setCategory] = useState('Mental');
     const [rewardXp, setRewardXp] = useState('');
     const [rewardBtlcs, setRewardBtlcs] = useState('');
     const [expiresAt, setExpiresAt] = useState('');
@@ -42,6 +44,7 @@ export default function CreateMission() {
             const payload = {
                 title,
                 description,
+                category,
                 reward_xp: Number(rewardXp),
                 reward_btlcs: Number(rewardBtlcs),
                 expires_at: expiresAt || null, // Se vazio, envia nulo (não expira)
@@ -81,6 +84,7 @@ export default function CreateMission() {
         setEditingId(m.id);
         setTitle(m.title);
         setDescription(m.description);
+        setCategory(m.category || 'Mental');
         setRewardXp(m.reward_xp.toString());
         setRewardBtlcs(m.reward_btlcs.toString());
         // Formata a data para o input datetime-local
@@ -92,6 +96,7 @@ export default function CreateMission() {
         setEditingId(null);
         setTitle('');
         setDescription('');
+        setCategory('Mental');
         setRewardXp('');
         setRewardBtlcs('');
         setExpiresAt('');
@@ -124,7 +129,16 @@ export default function CreateMission() {
                     <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full bg-blb-black border border-zinc-700 rounded-lg p-3 text-white focus:border-blb-purple h-24 resize-none" required />
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                        <label className="block text-xs font-bold text-zinc-500 mb-2 uppercase">Categoria</label>
+                        <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full bg-blb-black border border-zinc-700 rounded-lg p-3 text-white focus:border-blb-purple outline-none">
+                            <option value="Natureza">Natureza</option>
+                            <option value="Espiritual">Espiritual</option>
+                            <option value="Física">Física</option>
+                            <option value="Mental">Mental</option>
+                        </select>
+                    </div>
                     <div>
                         <label className="block text-xs font-bold text-zinc-500 mb-2 uppercase">XP</label>
                         <input type="number" value={rewardXp} onChange={(e) => setRewardXp(e.target.value)} className="w-full bg-blb-black border border-zinc-700 rounded-lg p-3 text-blb-purple font-bold focus:border-blb-purple" required />
@@ -172,6 +186,7 @@ export default function CreateMission() {
                                     {!isExpired && <span className="text-[10px] bg-green-500/20 text-green-500 px-2 py-0.5 rounded font-bold uppercase">Ativa</span>}
                                 </h4>
                                 <div className="flex items-center gap-3 text-xs mt-1">
+                                    <span className="text-zinc-400 font-bold uppercase">{m.category || 'Mental'}</span>
                                     <span className="text-blb-purple font-bold">{m.reward_xp} XP</span>
                                     <span className="text-blb-gold font-bold">{m.reward_btlcs} Btlcs</span>
                                     {m.expires_at && (

@@ -33,7 +33,7 @@ class ProfileController extends Controller
     // Lista todos os usuários do sistema
     public function indexUsers()
     {
-        return response()->json(User::orderBy('name', 'asc')->get(['id', 'name', 'email', 'role']));
+        return response()->json(User::orderBy('name', 'asc')->get(['id', 'name', 'email', 'role', 'level', 'xp', 'betelcoins']));
     }
 
     // Admin força a troca de senha de alguém
@@ -51,5 +51,23 @@ class ProfileController extends Controller
         $user->tokens()->delete();
 
         return response()->json(['message' => "A senha de {$user->name} foi alterada com sucesso!"]);
+    }
+
+    // Admin edita nível, xp e btlcs
+    public function adminUpdatePoints(Request $request, $id)
+    {
+        $request->validate([
+            'level' => 'required|integer|min:0',
+            'xp' => 'required|integer|min:0',
+            'betelcoins' => 'required|integer|min:0',
+        ]);
+
+        $user = User::findOrFail($id);
+        $user->level = $request->level;
+        $user->xp = $request->xp;
+        $user->betelcoins = $request->betelcoins;
+        $user->save();
+
+        return response()->json(['message' => "Pontuação de {$user->name} atualizada com sucesso!"]);
     }
 }

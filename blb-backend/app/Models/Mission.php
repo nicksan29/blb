@@ -12,6 +12,7 @@ class Mission extends Model
     protected $fillable = [
         'title',
         'description',
+        'category',
         'reward_xp',
         'reward_btlcs',
         'is_active',

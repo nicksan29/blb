@@ -46,6 +46,7 @@ class MissionController extends Controller
         $validated = $request->validate([
             'title' => 'required|string',
             'description' => 'required|string',
+            'category' => 'required|string|in:Natureza,Espiritual,Física,Mental',
             'reward_xp' => 'required|integer|min:0',
             'reward_btlcs' => 'required|integer|min:0',
             'expires_at' => 'nullable|date', // <-- Regra nova aqui
@@ -192,6 +193,7 @@ class MissionController extends Controller
         $validated = $request->validate([
             'title' => 'required|string',
             'description' => 'required|string',
+            'category' => 'required|string|in:Natureza,Espiritual,Física,Mental',
             'reward_xp' => 'required|integer|min:0',
             'reward_btlcs' => 'required|integer|min:0',
             'expires_at' => 'nullable|date',
