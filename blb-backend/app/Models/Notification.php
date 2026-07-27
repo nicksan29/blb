@@ -14,6 +14,7 @@ class Notification extends Model
         'type',
         'message',
         'is_read',
+        'for_admin',
     ];
 
     public function user()

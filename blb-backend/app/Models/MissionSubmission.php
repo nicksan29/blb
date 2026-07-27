@@ -15,6 +15,7 @@ class MissionSubmission extends Model
         'proof_text',
         'proof_image_path',
         'status',
+        'rejection_reason',
     ];
 
     // Relações para podermos buscar os dados do usuário e da missão

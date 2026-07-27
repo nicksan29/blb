@@ -102,6 +102,7 @@ class MissionController extends Controller
         Notification::create([
             'type' => 'mission',
             'message' => "O desbravador {$user->name} enviou evidência para a missão de ID {$id}.",
+            'for_admin' => true,
         ]);
 
         return response()->json(['message' => 'Missão enviada para análise!']);
@@ -109,28 +110,54 @@ class MissionController extends Controller
 
     public function approveSubmission($id)
     {
-        $submission = \App\Models\MissionSubmission::with('mission', 'user')->findOrFail($id);
+        $submission = MissionSubmission::with(['user', 'mission'])->findOrFail($id);
 
         if ($submission->status === 'approved') {
             return response()->json(['message' => 'Já aprovada.'], 400);
         }
 
-        $submission->update(['status' => 'approved']);
+        $user = $submission->user;
+        $mission = $submission->mission;
 
-        // Adiciona XP e Betelcoins ao DBV
-        $submission->user->increment('xp', $submission->mission->reward_xp);
-        $submission->user->increment('betelcoins', $submission->mission->reward_btlcs);
+        // --- XP BONUS LOGIC ---
+        // Conta quantas submissões JÁ foram aprovadas para esta missão
+        $approvedCount = MissionSubmission::where('mission_id', $mission->id)
+                                          ->where('status', 'approved')
+                                          ->count();
 
-        // Regra de subir de nível a cada 100 XP (Exemplo)
-        if ($submission->user->xp >= 100) {
-            $submission->user->increment('level');
-            $submission->user->decrement('xp', 100);
+        $bonusXp = 0;
+        $bonusText = '';
+        if ($approvedCount === 0) {
+            $bonusXp = 20;
+            $bonusText = ' (+20 XP de Bônus por ser o 1º!)';
+        } elseif ($approvedCount === 1) {
+            $bonusXp = 12;
+            $bonusText = ' (+12 XP de Bônus por ser o 2º!)';
+        } elseif ($approvedCount === 2) {
+            $bonusXp = 5;
+            $bonusText = ' (+5 XP de Bônus por ser o 3º!)';
         }
 
+        // 1. Soma os Btlcs e XP
+        $user->betelcoins += $mission->reward_btlcs;
+        $totalXpGained = $mission->reward_xp + $bonusXp;
+
+        // 2. Calcula a matemática do XP e Nível
+        $totalXp = $user->xp + $totalXpGained;
+        $levelsGained = floor($totalXp / 100);
+        $newXp = $totalXp % 100;
+
+        $user->level += $levelsGained;
+        $user->xp = $newXp;
+        $user->save();
+
+        // 3. Atualiza o status do envio
+        $submission->update(['status' => 'approved']);
+
         Notification::create([
-            'user_id' => $submission->user_id,
+            'user_id' => $user->id,
             'type' => 'mission',
-            'message' => "Sua missão '{$submission->mission->title}' foi aprovada! Você ganhou {$submission->mission->reward_xp} XP e {$submission->mission->reward_btlcs} Btlcs.",
+            'message' => "Sua missão '{$mission->title}' foi aprovada! Você ganhou {$totalXpGained} XP{$bonusText} e {$mission->reward_btlcs} Btlcs.",
         ]);
 
         return response()->json(['message' => 'Missão aprovada! Pontos creditados.']);
@@ -203,42 +230,5 @@ class MissionController extends Controller
 
 
 
-    // Aprova a missão e processa o LEVEL UP
-    public function approve($id)
-    {
-        $submission = MissionSubmission::with(['user', 'mission'])->findOrFail($id);
 
-        if ($submission->status !== 'pending') {
-            return response()->json(['message' => 'Esta missão já foi processada.'], 400);
-        }
-
-        $user = $submission->user;
-        $mission = $submission->mission;
-
-        // 1. Soma os Btlcs
-        $user->betelcoins += $mission->reward_btlcs;
-
-        // 2. Calcula a matemática do XP e Nível
-        $totalXp = $user->xp + $mission->reward_xp;
-
-        // Quantos níveis ele ganhou? (ex: 150 XP / 100 = 1 nível ganho)
-        $levelsGained = floor($totalXp / 100);
-
-        // Qual o XP que sobra? (ex: 150 XP % 100 = 50 XP restantes)
-        $newXp = $totalXp % 100;
-
-        $user->level += $levelsGained;
-        $user->xp = $newXp;
-        $user->save();
-
-        // 3. Atualiza o status do envio
-        $submission->status = 'approved';
-        $submission->save();
-
-        return response()->json([
-            'message' => 'Missão aprovada com sucesso!',
-            'user_new_level' => $user->level,
-            'user_new_xp' => $user->xp
-        ]);
-    }
 }

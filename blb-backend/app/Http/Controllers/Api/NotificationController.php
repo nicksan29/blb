@@ -15,11 +15,15 @@ class NotificationController extends Controller
         $query = \App\Models\Notification::query();
         
         if ($isAdmin) {
-            // Admins see notifications where user_id is null (global) or user_id is their own (if any admin specific)
-            $query->whereNull('user_id')->orWhere('user_id', $user->id);
+            // Admins see all global (null) and admin specific, plus their own
+            $query->where(function ($q) use ($user) {
+                $q->whereNull('user_id')->orWhere('user_id', $user->id);
+            });
         } else {
-            // DBVs see notifications where user_id is null (global) or user_id is their own
-            $query->whereNull('user_id')->orWhere('user_id', $user->id);
+            // DBVs see notifications where user_id is null (global) or user_id is their own, BUT NOT for_admin
+            $query->where(function ($q) use ($user) {
+                $q->whereNull('user_id')->orWhere('user_id', $user->id);
+            })->where('for_admin', false);
         }
 
         $notifications = $query->orderBy('created_at', 'desc')->take(20)->get();

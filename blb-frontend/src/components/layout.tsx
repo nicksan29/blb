@@ -93,7 +93,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Modal Dropdown de Notificações */}
           {showNotifications && (
-            <div className="absolute top-10 right-16 w-80 bg-zinc-800 border border-zinc-700 rounded-xl shadow-2xl p-4 z-50 max-h-96 overflow-y-auto">
+            <div className="absolute top-10 right-0 sm:right-16 w-[90vw] max-w-sm sm:w-80 bg-zinc-800 border border-zinc-700 rounded-xl shadow-2xl p-4 z-50 max-h-96 overflow-y-auto">
               <h4 className="font-bold text-white mb-2 text-sm border-b border-zinc-700 pb-2 flex justify-between">
                 Notificações
                 <span className="text-zinc-400 font-normal text-xs">{unreadCount} não lidas</span>
@@ -108,7 +108,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                       onClick={() => markAsRead(n.id)}
                       className={`p-3 rounded-lg cursor-pointer transition-colors ${n.is_read ? 'bg-zinc-900/50 text-zinc-500' : 'bg-zinc-900 border border-zinc-700 hover:border-blb-gold/50'}`}
                     >
-                      <p>{n.message}</p>
+                      <p className="break-words">{n.message}</p>
                       <span className="text-[10px] opacity-50 mt-1 block">
                         {new Date(n.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
                       </span>
