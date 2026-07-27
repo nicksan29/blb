@@ -17,6 +17,7 @@ interface MissionSubmission {
   proof_text: string;
   proof_image_path: string | null;
   status: string;
+  created_at: string;
 }
 
 interface MissionReviewModalProps {
@@ -53,6 +54,12 @@ export default function MissionReviewModal({ submission, onClose, onApprove, onR
     onClose();
   };
 
+  // Formata a data de envio
+  const submissionDate = new Date(submission.created_at).toLocaleString('pt-BR', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+
   return (
     <>
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
@@ -63,6 +70,7 @@ export default function MissionReviewModal({ submission, onClose, onApprove, onR
             <div>
               <h3 className="font-bold text-lg text-white">Avaliar Missão</h3>
               <p className="text-sm text-zinc-400">Desbravador: <span className="text-blb-gold font-bold">{submission.user.name}</span></p>
+              <p className="text-xs text-zinc-500 mt-1">Enviado em: {submissionDate}</p>
             </div>
             <button 
               onClick={onClose}
