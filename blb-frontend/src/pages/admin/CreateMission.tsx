@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Target, PlusCircle, Trash2, Edit2, CheckCircle, Clock, Upload } from 'lucide-react';
+import { Target, PlusCircle, Trash2, Edit2, CheckCircle, Clock, Upload, X } from 'lucide-react';
 import Layout from '../../components/layout';
 import { api } from '../../services/api';
 
@@ -171,11 +171,33 @@ export default function CreateMission() {
                         type="file" 
                         multiple 
                         accept="image/*,video/*" 
-                        onChange={(e) => setMissionMedia(e.target.files ? Array.from(e.target.files) : [])} 
+                        onChange={(e) => {
+                            if (e.target.files) {
+                                setMissionMedia(prev => [...prev, ...Array.from(e.target.files!)]);
+                            }
+                        }} 
                         className="block w-full text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 cursor-pointer"
                     />
+                    
+                    {/* Lista de mídias selecionadas */}
                     {missionMedia.length > 0 && (
-                        <p className="text-xs text-blb-purple mt-2 font-bold">{missionMedia.length} arquivo(s) selecionado(s)</p>
+                        <div className="mt-3 space-y-2">
+                            <p className="text-xs text-blb-purple font-bold">{missionMedia.length} arquivo(s) selecionado(s):</p>
+                            <div className="flex flex-col gap-2">
+                                {missionMedia.map((file, idx) => (
+                                    <div key={idx} className="flex items-center justify-between bg-black/40 border border-zinc-700 p-2 rounded-lg">
+                                        <span className="text-xs text-zinc-300 truncate max-w-[250px]">{file.name}</span>
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setMissionMedia(prev => prev.filter((_, i) => i !== idx))}
+                                            className="text-red-400 hover:text-red-300"
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     )}
                 </div>
 

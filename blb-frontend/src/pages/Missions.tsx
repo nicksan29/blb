@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Target, Upload, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import { Target, Upload, CheckCircle, Clock, AlertTriangle, X } from 'lucide-react';
 import Layout from '../components/layout';
 import { api } from '../services/api';
 import ImageViewerModal from '../components/ImageViewerModal';
@@ -183,11 +183,33 @@ export default function Missions() {
                             type="file" 
                             multiple
                             accept="image/*,video/*" 
-                            onChange={(e) => setProofMedia(e.target.files ? Array.from(e.target.files) : [])} 
+                            onChange={(e) => {
+                              if (e.target.files) {
+                                setProofMedia(prev => [...prev, ...Array.from(e.target.files!)]);
+                              }
+                            }} 
                             className="block w-full text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-blb-gold file:text-blb-black cursor-pointer" 
                           />
+                          
+                          {/* Lista de mídias selecionadas */}
                           {proofMedia.length > 0 && (
-                            <p className="text-xs text-blb-gold mt-2 font-bold">{proofMedia.length} arquivo(s) selecionado(s)</p>
+                            <div className="mt-3 space-y-2">
+                              <p className="text-xs text-blb-gold font-bold">{proofMedia.length} arquivo(s) selecionado(s):</p>
+                              <div className="flex flex-col gap-2">
+                                {proofMedia.map((file, idx) => (
+                                  <div key={idx} className="flex items-center justify-between bg-black/40 border border-zinc-700 p-2 rounded-lg">
+                                    <span className="text-xs text-zinc-300 truncate max-w-[200px]">{file.name}</span>
+                                    <button 
+                                      type="button" 
+                                      onClick={() => setProofMedia(prev => prev.filter((_, i) => i !== idx))}
+                                      className="text-red-400 hover:text-red-300"
+                                    >
+                                      <X size={14} />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
                           )}
                         </div>
                         <button type="submit" disabled={loading} className="w-full bg-blb-gold hover:bg-blb-purple text-blb-black hover:text-white font-bold py-3 rounded-lg flex justify-center items-center gap-2">
