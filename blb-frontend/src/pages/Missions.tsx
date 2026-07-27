@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Target, Upload, CheckCircle, Clock, AlertTriangle, XCircle } from 'lucide-react';
+import { Target, Upload, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 import Layout from '../components/layout';
 import { api } from '../services/api';
 

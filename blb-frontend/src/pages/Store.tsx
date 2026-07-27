@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ShoppingBag, Lock, ShoppingCart, Loader2 } from 'lucide-react';
+import { ShoppingBag, Lock, ShoppingCart } from 'lucide-react';
 import Layout from '../components/layout'; // Corrigido para l minúsculo
 import { api } from '../services/api';
 import { useAuthStore } from '../store/authStore';
@@ -17,11 +17,10 @@ interface StoreItem {
 export default function Store() {
   const [items, setItems] = useState<StoreItem[]>([]);
   const [isStoreOpen, setIsStoreOpen] = useState(true);
-  const [loading, setLoading] = useState(false);
+  const { user, updateUser } = useAuthStore();
   const [message, setMessage] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<StoreItem | null>(null);
   
-  const { user, updateUser } = useAuthStore();
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   // 1. Criamos a função fetchItems corretamente para poder ser chamada várias vezes

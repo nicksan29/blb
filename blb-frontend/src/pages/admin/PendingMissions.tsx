@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle, XCircle, Clock, Image as ImageIcon } from 'lucide-react';
+import { CheckCircle, Image as ImageIcon } from 'lucide-react';
 import Layout from '../../components/layout';
 import { api } from '../../services/api';
 import MissionReviewModal from '../../components/MissionReviewModal';
