@@ -16,6 +16,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'unit',
         'avatar_path',
         'level',
         'xp',
@@ -33,5 +34,10 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function submissions()
+    {
+        return $this->hasMany(\App\Models\MissionSubmission::class, 'user_id');
     }
 }

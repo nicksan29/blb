@@ -4,10 +4,13 @@ import { Target, Upload, CheckCircle, Clock, AlertTriangle, X } from 'lucide-rea
 import Layout from '../components/layout';
 import { api } from '../services/api';
 import ImageViewerModal from '../components/ImageViewerModal';
+import { useAuthStore } from '../store/authStore';
 
 export default function Missions() {
   const [missions, setMissions] = useState<any[]>([]);
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const user = useAuthStore((state) => state.user);
+  const isCounselor = user?.role === 'counselor';
   
   const [proofText, setProofText] = useState('');
   const [proofMedia, setProofMedia] = useState<File[]>([]);
@@ -164,12 +167,19 @@ export default function Missions() {
                       </div>
                     )}
 
-                    {/* Bloqueia o formulário se já estiver pendente ou aprovado */}
-                    {status === 'pending' || status === 'approved' ? (
+                    {/* Conselheiro só visualiza */}
+                    {isCounselor ? (
                       <div className="text-center p-4 bg-black/30 rounded-lg text-sm text-zinc-400 font-bold border border-zinc-800">
-                        {status === 'pending' ? 'Sua evidência está sendo avaliada. Aguarde.' : 'Você já concluiu esta missão!'}
+                        Modo de Visualização do Conselheiro
                       </div>
                     ) : (
+                      <>
+                        {/* Bloqueia o formulário se já estiver pendente ou aprovado */}
+                        {status === 'pending' || status === 'approved' ? (
+                          <div className="text-center p-4 bg-black/30 rounded-lg text-sm text-zinc-400 font-bold border border-zinc-800">
+                            {status === 'pending' ? 'Sua evidência está sendo avaliada. Aguarde.' : 'Você já concluiu esta missão!'}
+                          </div>
+                        ) : (
                       <form onSubmit={(e) => handleSubmit(e, mission.id)} className="space-y-4 border-t border-zinc-800 pt-4 mt-4">
                         <div>
                           <label className="block text-xs font-bold text-zinc-500 mb-2 uppercase">Relatório da Missão</label>
@@ -217,6 +227,8 @@ export default function Missions() {
                         </button>
                       </form>
                     )}
+                  </>
+                )}
                   </motion.div>
                 )}
               </AnimatePresence>

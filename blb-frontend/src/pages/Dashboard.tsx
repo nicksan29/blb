@@ -25,7 +25,14 @@ export default function Dashboard() {
 
     api.get('/ranking').then(response => {
       setIsRankingVisible(response.data.is_visible);
-      setLevelRanking(response.data.level_ranking);
+      
+      // Mapeia para adicionar a pontuação real e desempatar a barra
+      const mappedLevelRanking = response.data.level_ranking.map((u: any) => ({
+        ...u,
+        score: (u.level * 100) + u.xp
+      }));
+      setLevelRanking(mappedLevelRanking);
+      
       setCoinsRanking(response.data.betelcoins_ranking);
       setLoading(false);
     }).catch(err => console.error(err));
@@ -43,19 +50,29 @@ export default function Dashboard() {
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
+      const data = payload[0].payload;
       return (
         <div className="bg-zinc-900 border border-zinc-700 p-3 rounded-lg shadow-xl">
-          <p className="font-bold text-white mb-1">{payload[0].payload.name}</p>
+          <p className="font-bold text-white mb-1">{data.name}</p>
           <p className="text-blb-gold font-bold">
             {activeTab === 'levels' 
-              ? `Nível: ${payload[0].value} (${payload[0].payload.xp} XP)`
-              : `${payload[0].value} Btlcs`}
+              ? `Nível: ${data.level} (${data.xp} XP)`
+              : `${data.betelcoins} Btlcs`}
           </p>
           <p className="text-xs text-zinc-500 mt-1">Clique para ver mais</p>
         </div>
       );
     }
     return null;
+  };
+
+  const getUnitColor = (unitName: string) => {
+    if (!unitName) return '#8B5CF6'; 
+    if (unitName.includes('Judá')) return '#D4AF37'; 
+    if (unitName.includes('Benjamim')) return '#A8A9AD'; 
+    if (unitName.includes('Aser')) return '#CD7F32'; 
+    if (unitName.includes('Gade')) return '#6A0D91'; 
+    return '#8B5CF6';
   };
 
   const containerVariants = {
@@ -161,26 +178,26 @@ export default function Dashboard() {
             </div>
 
             {!loading && (
-              <div className="h-[400px] w-full">
+              <div className="w-full" style={{ height: Math.max(400, (activeTab === 'levels' ? levelRanking.length : coinsRanking.length) * 40) }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
                     data={activeTab === 'levels' ? levelRanking : coinsRanking} 
                     layout="vertical"
-                    margin={{ top: 0, right: 20, left: 20, bottom: 0 }}
+                    margin={{ top: 0, right: 20, left: 10, bottom: 0 }}
                   >
                     <XAxis type="number" hide />
-                    <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#a1a1aa', fontSize: 12, fontWeight: 'bold' }} width={100} />
+                    <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#a1a1aa', fontSize: 12, fontWeight: 'bold' }} width={120} />
                     <Tooltip content={<CustomTooltip />} cursor={{ fill: '#27272a' }} />
                     <Bar 
-                      dataKey={activeTab === 'levels' ? 'level' : 'betelcoins'} 
+                      dataKey={activeTab === 'levels' ? 'score' : 'betelcoins'} 
                       radius={[0, 4, 4, 0]} 
                       barSize={20}
                       animationDuration={1500}
                       onClick={(data) => handleBarClick(data.payload)}
                       cursor="pointer"
                     >
-                      {(activeTab === 'levels' ? levelRanking : coinsRanking).map((_, index) => (
-                        <Cell key={`cell-${index}`} fill={index === 0 ? '#D4AF37' : index === 1 ? '#A8A9AD' : index === 2 ? '#CD7F32' : '#6A0D91'} />
+                      {(activeTab === 'levels' ? levelRanking : coinsRanking).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={getUnitColor(entry.unit)} />
                       ))}
                     </Bar>
                   </BarChart>

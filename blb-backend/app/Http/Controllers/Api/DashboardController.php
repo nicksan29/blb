@@ -27,11 +27,11 @@ class DashboardController extends Controller
         $levelRanking = User::where('role', 'dbv')
                             ->orderBy('level', 'desc')
                             ->orderBy('xp', 'desc')
-                            ->get(['id', 'name', 'avatar_path', 'level', 'xp']);
+                            ->get(['id', 'name', 'avatar_path', 'level', 'xp', 'unit']);
 
         $betelcoinsRanking = User::where('role', 'dbv')
                                  ->orderBy('betelcoins', 'desc')
-                                 ->get(['id', 'name', 'avatar_path', 'betelcoins']);
+                                 ->get(['id', 'name', 'avatar_path', 'betelcoins', 'unit']);
 
         return response()->json([
             'is_visible' => $isRankingVisible,

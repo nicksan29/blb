@@ -11,6 +11,8 @@ import CreateMission from './pages/admin/CreateMission';
 import Profile from './pages/Profile';
 import ManageUsers from './pages/admin/ManageUsers';
 import Transactions from './pages/admin/Transactions';
+import UnitsRanking from './pages/UnitsRanking';
+import CounselorUnit from './pages/CounselorUnit';
 
 function App() {
   const { isAuthenticated, user } = useAuthStore();
@@ -57,6 +59,12 @@ function App() {
 
 
         <Route path="/admin/usuarios" element={isAuthenticated && user?.role === 'admin' ? <ManageUsers /> : <Navigate to="/dashboard" />} />
+        
+        {/* Unidades (Comum) */}
+        <Route path="/unidades" element={isAuthenticated ? <UnitsRanking /> : <Navigate to="/login" />} />
+        
+        {/* Conselheiro */}
+        <Route path="/conselheiro/unidade" element={isAuthenticated && user?.role === 'counselor' ? <CounselorUnit /> : <Navigate to="/dashboard" />} />
       </Routes>
     </BrowserRouter>
   );

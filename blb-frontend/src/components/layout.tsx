@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Target, ShoppingBag, LogOut, User as UserIcon, Users, Bell, CheckCircle } from 'lucide-react';
+import { Home, Target, ShoppingBag, LogOut, User as UserIcon, Users, Bell, CheckCircle, Trophy, Shield } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { api } from '../services/api';
 
@@ -51,20 +51,39 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   };
 
   const isAdmin = user?.role === 'admin';
-
-  const navItems = isAdmin 
-    ? [
+  const isCounselor = user?.role === 'counselor';
+  
+  const getNavItems = () => {
+    if (isAdmin) {
+      return [
         { name: 'Início', path: '/dashboard', icon: <Home size={24} /> },
+        { name: 'Unidades', path: '/unidades', icon: <Trophy size={24} /> },
         { name: 'Missão', path: '/admin/nova-missao', icon: <Target size={24} /> },
         { name: 'Loja', path: '/admin/loja', icon: <ShoppingBag size={24} /> },
         { name: 'Validar', path: '/admin/validar', icon: <CheckCircle size={24} /> },
-        { name: 'Contas', path: '/admin/usuarios', icon: <Users size={24} /> },
-      ]
-    : [
+      ];
+    }
+    
+    if (isCounselor) {
+      const unitName = user?.unit?.replace('Alcatéia ', '')?.replace('Leões de ', '')?.replace('Valentes de ', '')?.replace('Chamas de ', '') || 'Sua Unidade';
+      return [
         { name: 'Início', path: '/dashboard', icon: <Home size={24} /> },
+        { name: 'Unidades', path: '/unidades', icon: <Trophy size={24} /> },
+        { name: 'Missões', path: '/missoes', icon: <Target size={24} /> },
+        { name: unitName, path: '/conselheiro/unidade', icon: <Shield size={24} /> },
+      ];
+    }
+    
+    // DBV
+    return [
+        { name: 'Início', path: '/dashboard', icon: <Home size={24} /> },
+        { name: 'Unidades', path: '/unidades', icon: <Trophy size={24} /> },
         { name: 'Missões', path: '/missoes', icon: <Target size={24} /> },
         { name: 'Loja', path: '/loja', icon: <ShoppingBag size={24} /> },
-      ];
+    ];
+  };
+
+  const navItems = getNavItems();
 
   return (
     <div className="min-h-screen bg-blb-black text-white font-sans pb-20 md:pb-0 md:pl-64">
@@ -117,6 +136,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 )}
               </div>
             </div>
+          )}
+
+          {/* Admin: Aba Contas */}
+          {isAdmin && (
+            <button onClick={() => navigate('/admin/usuarios')} className="text-zinc-400 hover:text-blb-gold transition-colors hidden sm:block">
+              <Users size={24} />
+            </button>
           )}
 
           <button onClick={() => navigate('/perfil')} className="text-zinc-400 hover:text-blb-purple transition-colors">

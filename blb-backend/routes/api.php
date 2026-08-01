@@ -26,6 +26,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Dashboards e Rankings (Geral)
     Route::get('/ranking', [DashboardController::class, 'ranking']);
+    Route::get('/units/ranking', [\App\Http\Controllers\Api\UnitController::class, 'ranking']);
+    Route::get('/counselor/unit', [\App\Http\Controllers\Api\UnitController::class, 'myUnit']);
 
     // Missões (Acesso comum)
     Route::get('/missions', [MissionController::class, 'index']);
