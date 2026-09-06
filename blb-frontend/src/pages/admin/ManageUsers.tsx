@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Users, Key } from 'lucide-react';
+import Layout from '../../components/layout';
 import { api } from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
 

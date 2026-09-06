@@ -202,7 +202,7 @@ export default function Dashboard() {
                       onClick={(data) => handleBarClick(data.payload)}
                       cursor="pointer"
                     >
-                      {(activeTab === 'levels' ? levelRanking : coinsRanking).map((entry, index) => (
+                      {(activeTab === 'levels' ? levelRanking : coinsRanking).map((_entry, index) => (
                         <Cell key={`cell-${index}`} fill={getIndividualColor(index)} />
                       ))}
                     </Bar>

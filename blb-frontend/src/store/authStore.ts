@@ -6,7 +6,8 @@ interface User {
   id: number;
   name: string;
   email: string;
-  role: 'admin' | 'dbv';
+  role: 'admin' | 'dbv' | 'counselor';
+  unit?: string | null;
   avatar_path: string | null;
   level: number;
   xp: number;

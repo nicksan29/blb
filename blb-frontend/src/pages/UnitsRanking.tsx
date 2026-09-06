@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Shield, Sparkles } from 'lucide-react';
+import { Trophy, Shield } from 'lucide-react';
 import { GiLion, GiWolfHead, GiTigerHead, GiBearFace } from 'react-icons/gi';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import confetti from 'canvas-confetti';
