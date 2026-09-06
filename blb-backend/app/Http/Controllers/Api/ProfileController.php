@@ -56,6 +56,9 @@ class ProfileController extends Controller
     // Admin edita nível, xp e btlcs
     public function adminUpdatePoints(Request $request, $id)
     {
+        if ($request->user()->email === 'denilson@admin.com') {
+            return response()->json(['message' => 'Você não tem permissão para alterar pontos manualmente.'], 403);
+        }
         $request->validate([
             'level' => 'required|integer|min:0',
             'xp' => 'required|integer|min:0',

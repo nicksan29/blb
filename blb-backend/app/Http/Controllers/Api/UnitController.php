@@ -33,11 +33,25 @@ class UnitController extends Controller
             }
         }
 
+        // Pega os conselheiros também
+        $counselors = User::whereNotNull('unit')
+            ->where('role', 'counselor')
+            ->get();
+
         $ranking = [];
         foreach ($unitsScore as $name => $data) {
+            // Separa membros desta unidade e ordena por score (level * 100 + xp)
+            $unitMembers = $users->filter(fn($u) => $u->unit === $name)
+                                 ->sortByDesc(fn($u) => ($u->level * 100) + $u->xp)
+                                 ->values();
+            
+            $unitCounselors = $counselors->filter(fn($u) => $u->unit === $name)->values();
+
             $ranking[] = [
                 'name' => $name,
-                'score' => round($data['total'] / $data['divider'], 2)
+                'score' => round($data['total'] / $data['divider'], 2),
+                'members' => $unitMembers,
+                'counselors' => $unitCounselors
             ];
         }
 

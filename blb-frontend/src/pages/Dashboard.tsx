@@ -66,13 +66,11 @@ export default function Dashboard() {
     return null;
   };
 
-  const getUnitColor = (unitName: string) => {
-    if (!unitName) return '#8B5CF6'; 
-    if (unitName.includes('Judá')) return '#D4AF37'; 
-    if (unitName.includes('Benjamim')) return '#A8A9AD'; 
-    if (unitName.includes('Aser')) return '#CD7F32'; 
-    if (unitName.includes('Gade')) return '#6A0D91'; 
-    return '#8B5CF6';
+  const getIndividualColor = (index: number) => {
+    if (index === 0) return '#D4AF37'; 
+    if (index === 1) return '#A8A9AD'; 
+    if (index === 2) return '#CD7F32'; 
+    return '#6A0D91';
   };
 
   const containerVariants = {
@@ -186,7 +184,15 @@ export default function Dashboard() {
                     margin={{ top: 0, right: 20, left: 10, bottom: 0 }}
                   >
                     <XAxis type="number" hide />
-                    <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#a1a1aa', fontSize: 12, fontWeight: 'bold' }} width={120} />
+                    <YAxis 
+                      dataKey="name" 
+                      type="category" 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fill: '#a1a1aa', fontSize: 12, fontWeight: 'bold' }} 
+                      width={120} 
+                      interval={0}
+                    />
                     <Tooltip content={<CustomTooltip />} cursor={{ fill: '#27272a' }} />
                     <Bar 
                       dataKey={activeTab === 'levels' ? 'score' : 'betelcoins'} 
@@ -197,7 +203,7 @@ export default function Dashboard() {
                       cursor="pointer"
                     >
                       {(activeTab === 'levels' ? levelRanking : coinsRanking).map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={getUnitColor(entry.unit)} />
+                        <Cell key={`cell-${index}`} fill={getIndividualColor(index)} />
                       ))}
                     </Bar>
                   </BarChart>
